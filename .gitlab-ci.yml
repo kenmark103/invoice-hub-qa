@@ -1,0 +1,34 @@
+stages: [lint, unit, api, ui, report]
+
+variables:
+  APP_ENV: test
+  ACTIVE_BUGS: ""
+
+lint:
+  stage: lint
+  script: python -m py_compile app/main.py app/models.py app/pricing.py app/services.py app/auth.py
+
+unit:
+  stage: unit
+  script: python -m pytest tests/unit --junitxml=report/junit-unit.xml -q
+
+api:
+  stage: api
+  script: python -m pytest tests/api tests/test_bug_toggles.py --junitxml=report/junit-api.xml -q
+  artifacts:
+    paths: [report/]
+    when: always
+
+ui:
+  stage: ui
+  allow_failure: true
+  script:
+    - pip install playwright && playwright install --with-deps chromium
+    - python -m pytest tests/ui -v
+
+report:
+  stage: report
+  script: ls report/
+  artifacts:
+    paths: [report/]
+    when: always

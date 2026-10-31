@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InvoiceHub</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+  th, td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; }
+  #app-view { display: none; }
+  .row { margin: 0.5rem 0; }
+</style>
+</head>
+<body>
+<h1>InvoiceHub</h1>
+
+<div id="login-view">
+  <h2>Login</h2>
+  <div class="row"><label>Email <input id="email" type="email" value="admin@acme.test" /></label></div>
+  <div class="row"><label>Password <input id="password" type="password" value="Passw0rd!" /></label></div>
+  <button id="login-btn">Log in</button>
+  <p id="login-error" style="color:red"></p>
+</div>
+
+<div id="app-view">
+  <h2>Invoices <button id="logout-btn">Log out</button> <button id="refresh-btn">Refresh</button></h2>
+  <table id="invoice-table">
+    <thead><tr><th>Number</th><th>Status</th><th>Total</th><th>Due</th><th>Actions</th></tr></thead>
+    <tbody id="invoice-body"></tbody>
+  </table>
+  <h3>New invoice</h3>
+  <div class="row"><label>Customer id <input id="f-customer" type="number" value="1" /></label></div>
+  <div class="row"><label>Due date <input id="f-due" type="date" /></label></div>
+  <div class="row"><label>Description <input id="f-desc" value="Testing services" /></label></div>
+  <div class="row"><label>Qty <input id="f-qty" type="number" value="2" /></label></div>
+  <div class="row"><label>Unit price <input id="f-price" type="number" step="0.01" value="600.00" /></label></div>
+  <button id="create-btn">Create draft</button>
+  <p id="form-msg"></p>
+</div>
+
+<script>
+let token = null;
+let role = null;
+const $ = (id) => document.getElementById(id);
+const auth = () => ({ "Content-Type": "application/json", "Authorization": "Bearer " + token });
+
+$("login-btn").onclick = async () => {
+  $("login-error").textContent = "";
+  const r = await fetch("/auth/login", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: $("email").value, password: $("password").value }),
+  });
+  if (!r.ok) { $("login-error").textContent = "Login failed"; return; }
+  const data = await r.json();
+  token = data.access_token;
+  role = data.user.role;
+  $("login-view").style.display = "none";
+  $("app-view").style.display = "block";
+  loadInvoices();
+};
+$("logout-btn").onclick = () => {
+  token = null;
+  role = null;
+  $("app-view").style.display = "none";
+  $("login-view").style.display = "block";
+};
+$("refresh-btn").onclick = loadInvoices;
+
+function actionButtons(inv) {
+  const btn = (action, label) =>
+    `<button data-action="${action}" data-id="${inv.id}">${label}</button>`;
+  if (inv.status === "draft") return btn("submit", "Submit") + btn("void", "Void");
+  if (inv.status === "submitted" && (role === "admin" || role === "manager")) {
+    return btn("approve", "Approve") + btn("reject", "Reject");
+  }
+  if (inv.status === "approved") {
+    let html = role === "admin" || role === "manager" ? btn("pay", "Mark paid") : "";
+    if (role === "admin") html += btn("void", "Void");
+    return html;
+  }
+  return "";
+}
+
+async function loadInvoices() {
+  const r = await fetch("/invoices?page=1&page_size=50", { headers: auth() });
+  const data = await r.json();
+  $("invoice-body").innerHTML = data.items.map((i) =>
+    `<tr><td>${i.number}</td><td>${i.status}</td><td>${i.total}</td><td>${i.due_date}</td><td>${actionButtons(i)}</td></tr>`
+  ).join("");
+}
+
+$("invoice-body").onclick = async (e) => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+  const r = await fetch(`/invoices/${btn.dataset.id}/${btn.dataset.action}`, {
+    method: "POST", headers: auth(),
+  });
+  $("form-msg").textContent = r.ok ? "Done" : "Error " + r.status;
+  if (r.ok) loadInvoices();
+};
+$("create-btn").onclick = async () => {
+  const r = await fetch("/invoices", {
+    method: "POST", headers: auth(),
+    body: JSON.stringify({
+      customer_id: Number($("f-customer").value), due_date: $("f-due").value,
+      lines: [{ description: $("f-desc").value, qty: Number($("f-qty").value), unit_price: $("f-price").value }],
+    }),
+  });
+  $("form-msg").textContent = r.ok ? "Created " + (await r.json()).number : "Error " + r.status;
+  if (r.ok) loadInvoices();
+};
+$("f-due").value = new Date().toISOString().slice(0, 10);
+</script>
+</body>
+</html>
