@@ -1,0 +1,17 @@
+$kind: http-request
+name: '11 - Submit for admin void'
+order: 11000
+method: POST
+url: '{{baseUrl}}/invoices/{{adminVoidInvoiceId}}/submit'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantA_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+          pm.response.to.have.status(200);
+      });

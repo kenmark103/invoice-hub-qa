@@ -1,0 +1,35 @@
+$kind: collection
+description: |-
+  Postman collection for validating InvoiceHub API behavior — status codes, response bodies, business rules, and data persistence.
+
+  **Seed users (password: Passw0rd! for all)**
+
+  Tenant A — Acme Ltd (standard plan):
+  - admin@acme.test  (role: admin)
+  - manager@acme.test  (role: manager)
+  - staff1@acme.test  (role: staff)
+  - staff2@acme.test  (role: staff)
+
+  Tenant B — Beta Corp (pro plan):
+  - admin@beta.test  (role: admin)
+  - manager@beta.test  (role: manager)
+  - staff1@beta.test  (role: staff)
+  - staff2@beta.test  (role: staff)
+
+  Tenant C — Nuru NGO (standard plan):
+  - admin@nuru.test  (role: admin)
+  - manager@nuru.test  (role: manager)
+  - staff1@nuru.test  (role: staff)
+  - staff2@nuru.test  (role: staff)
+variables:
+  baseUrl: http://localhost:8000
+  token: ""
+  tenantA_token: ""
+  tenantB_token: ""
+  invoiceId: ""
+  draftInvoiceId: ""
+  approveInvoiceId: ""
+  rejectInvoiceId: ""
+  voidInvoiceId: ""
+  payInvoiceId: ""
+  customerId: ""

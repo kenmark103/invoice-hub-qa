@@ -51,6 +51,32 @@ def test_create_submit_approve_happy_path(api_client):
     assert body["approved_by"] is not None
 
 
+def test_invoice_line_schemas_expose_line_item_fields(client):
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+    expected_ref = {"$ref": "#/components/schemas/LineIn"}
+
+    assert schemas["InvoiceCreate"]["properties"]["lines"]["items"] == expected_ref
+    patch_lines = schemas["InvoicePatch"]["properties"]["lines"]["anyOf"]
+    assert patch_lines[0]["items"] == expected_ref
+    assert patch_lines[1]["type"] == "null"
+    assert schemas["LineIn"]["properties"].keys() >= {"description", "qty", "unit_price"}
+
+
+def test_patch_invoice_lines_accepts_line_item_objects(api_client):
+    c, headers = api_client("staff")
+    inv = make_draft(c, headers)
+
+    response = c.patch(
+        f"/invoices/{inv['id']}",
+        json={"lines": [{"description": "Updated service", "qty": 3, "unit_price": "125.50"}]},
+        headers=headers,
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["lines"][0]["description"] == "Updated service"
+    assert response.json()["lines"][0]["qty"] == 3
+
+
 def test_error_body_shape_on_missing_invoice(api_client):
     # Arrange
     c, headers = api_client("staff")

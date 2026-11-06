@@ -1,0 +1,11 @@
+$kind: collection
+name: '3 - Invoice Lifecycle'
+description: |-
+  Validates the full invoice state machine:
+  draft → submitted → approved → paid
+  draft → void
+  submitted → rejected
+  approved → void (admin only)
+
+  Each scenario uses a separate invoice so one test's final state does not block another.
+  The "Create Draft" request captures the returned invoice ID into the relevant collection variable.

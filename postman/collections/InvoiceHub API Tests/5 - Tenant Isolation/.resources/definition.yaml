@@ -1,0 +1,7 @@
+$kind: collection
+name: '5 - Tenant Isolation'
+description: |-
+  Validates that tenants cannot access or mutate each other's data.
+  Cross-tenant reads and writes must return 404 (never 403) per the app's tenant_or_404 policy.
+
+  Requires tenantA_token and tenantB_token to be set (run the Authentication folder first).

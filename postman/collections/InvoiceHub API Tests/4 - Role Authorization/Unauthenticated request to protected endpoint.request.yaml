@@ -1,0 +1,17 @@
+$kind: http-request
+name: 'Unauthenticated request to protected endpoint'
+order: 3000
+method: GET
+url: '{{baseUrl}}/invoices'
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 401 — no token provided", function () {
+          pm.response.to.have.status(401);
+      });
+      pm.test("Error code is unauthorized", function () {
+          pm.expect(pm.response.json().code).to.eql("unauthorized");
+      });

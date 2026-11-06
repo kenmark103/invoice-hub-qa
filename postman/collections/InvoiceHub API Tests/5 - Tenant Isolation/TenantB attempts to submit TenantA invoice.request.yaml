@@ -1,0 +1,20 @@
+$kind: http-request
+name: "TenantB attempts to submit TenantA's invoice"
+order: 3000
+method: POST
+url: '{{baseUrl}}/invoices/{{tenantAInvoiceId}}/submit'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantB_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 404 — cross-tenant mutation returns not found", function () {
+          pm.response.to.have.status(404);
+      });
+      pm.test("Error code is not_found (no data mutation)", function () {
+          pm.expect(pm.response.json().code).to.eql("not_found");
+      });

@@ -1,0 +1,35 @@
+$kind: http-request
+name: '05 - Create Draft for rejection'
+order: 5000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Rejection test item",
+                "qty": 1,
+                "unit_price": 150.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.collectionVariables.set("rejectInvoiceId", pm.response.json().id);

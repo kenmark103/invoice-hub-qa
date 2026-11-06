@@ -1,0 +1,38 @@
+$kind: http-request
+name: 'Create invoice - invalid qty and price'
+order: 8000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Bad line",
+                "qty": 0,
+                "unit_price": -5.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 422 for invalid qty/price", function () {
+          pm.response.to.have.status(422);
+      });
+      pm.test("Error code indicates validation failure", function () {
+          const json = pm.response.json();
+          pm.expect(["invalid_qty", "invalid_price", "validation_error"]).to.include(json.code);
+      });

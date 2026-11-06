@@ -1,0 +1,35 @@
+$kind: http-request
+name: '08 - Create Draft for voiding'
+order: 8000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Void test item",
+                "qty": 1,
+                "unit_price": 200.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.collectionVariables.set("voidInvoiceId", pm.response.json().id);

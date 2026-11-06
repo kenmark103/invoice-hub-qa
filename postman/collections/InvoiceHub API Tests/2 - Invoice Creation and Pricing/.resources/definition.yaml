@@ -1,0 +1,13 @@
+$kind: collection
+name: '2 - Invoice Creation and Pricing'
+description: |-
+  Validates invoice creation, pricing tiers, and response totals.
+
+  Discount tiers (standard plan):
+  - subtotal < 500 → 0%
+  - 500–1999.99 → 5%
+  - 2000–9999.99 → 10%
+  - ≥ 10000 → 15%
+
+  Pro plan adds +2% (capped at 15%).
+  Tax: 16% applied after discount.

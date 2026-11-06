@@ -1,0 +1,45 @@
+$kind: http-request
+name: 'Create Standard invoice - 10% tier (subtotal 2000)'
+order: 3000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Standard item at 2000 threshold",
+                "qty": 2,
+                "unit_price": 1000.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("10% discount applied at subtotal 2000", function () {
+          const json = pm.response.json();
+          pm.expect(parseFloat(json.subtotal)).to.eql(2000.00);
+          pm.expect(parseFloat(json.discount_rate)).to.eql(10);
+          pm.expect(parseFloat(json.discount_amount)).to.eql(200.00);
+      });
+      pm.test("Tax is 16% of discounted amount (1800)", function () {
+          const json = pm.response.json();
+          pm.expect(parseFloat(json.tax)).to.eql(288.00);
+          pm.expect(parseFloat(json.total)).to.eql(2088.00);
+      });

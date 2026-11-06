@@ -1,0 +1,39 @@
+$kind: http-request
+name: '01 - Create Draft (capture draftInvoiceId)'
+order: 1000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Lifecycle test item",
+                "qty": 2,
+                "unit_price": 250.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("Invoice created as draft", function () {
+          const json = pm.response.json();
+          pm.expect(json.status).to.eql("draft");
+          pm.collectionVariables.set("draftInvoiceId", json.id);
+      });

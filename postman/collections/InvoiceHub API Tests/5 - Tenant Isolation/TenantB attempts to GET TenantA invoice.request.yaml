@@ -1,0 +1,20 @@
+$kind: http-request
+name: "TenantB attempts to GET TenantA's invoice"
+order: 2000
+method: GET
+url: '{{baseUrl}}/invoices/{{tenantAInvoiceId}}'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantB_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 404 — cross-tenant read returns not found", function () {
+          pm.response.to.have.status(404);
+      });
+      pm.test("Error code is not_found (never 403)", function () {
+          pm.expect(pm.response.json().code).to.eql("not_found");
+      });

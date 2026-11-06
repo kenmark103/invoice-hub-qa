@@ -1,0 +1,39 @@
+$kind: http-request
+name: 'TenantA creates invoice (capture ID)'
+order: 1000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantA_token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Tenant isolation test item",
+                "qty": 1,
+                "unit_price": 100.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("Invoice belongs to tenantA", function () {
+          const json = pm.response.json();
+          pm.expect(json.status).to.eql("draft");
+          pm.collectionVariables.set("tenantAInvoiceId", json.id);
+      });

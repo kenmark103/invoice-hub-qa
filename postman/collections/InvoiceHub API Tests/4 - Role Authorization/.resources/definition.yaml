@@ -1,0 +1,6 @@
+$kind: collection
+name: '4 - Role Authorization'
+description: |-
+  Validates that role-based access control is enforced correctly.
+  Staff cannot approve or void approved invoices.
+  Unauthenticated requests to protected endpoints must return 401.

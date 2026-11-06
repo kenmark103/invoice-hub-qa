@@ -1,0 +1,49 @@
+$kind: http-request
+name: 'Create Draft - below tier threshold (standard)'
+order: 1000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Basic item",
+                "qty": 1,
+                "unit_price": 100.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("Invoice is draft", function () {
+          pm.expect(pm.response.json().status).to.eql("draft");
+      });
+      pm.test("Subtotal is 100.00 — 0% discount tier", function () {
+          const json = pm.response.json();
+          pm.expect(parseFloat(json.subtotal)).to.eql(100.00);
+          pm.expect(parseFloat(json.discount_rate)).to.eql(0);
+          pm.expect(parseFloat(json.discount_amount)).to.eql(0);
+      });
+      pm.test("Tax is 16% of subtotal", function () {
+          const json = pm.response.json();
+          pm.expect(parseFloat(json.tax)).to.eql(16.00);
+          pm.expect(parseFloat(json.total)).to.eql(116.00);
+      });
+      pm.collectionVariables.set("invoiceId", pm.response.json().id);

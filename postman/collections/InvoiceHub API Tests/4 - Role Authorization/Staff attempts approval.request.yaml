@@ -1,0 +1,20 @@
+$kind: http-request
+name: 'Staff attempts approval'
+order: 1000
+method: POST
+url: '{{baseUrl}}/invoices/{{rejectInvoiceId}}/approve'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 403 — staff cannot approve", function () {
+          pm.response.to.have.status(403);
+      });
+      pm.test("Error code is forbidden", function () {
+          pm.expect(pm.response.json().code).to.eql("forbidden");
+      });

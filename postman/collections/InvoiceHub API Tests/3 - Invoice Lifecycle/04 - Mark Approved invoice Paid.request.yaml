@@ -1,0 +1,20 @@
+$kind: http-request
+name: '04 - Mark Approved invoice Paid'
+order: 4000
+method: POST
+url: '{{baseUrl}}/invoices/{{approveInvoiceId}}/pay'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantA_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Invoice status is paid", function () {
+          pm.expect(pm.response.json().status).to.eql("paid");
+      });

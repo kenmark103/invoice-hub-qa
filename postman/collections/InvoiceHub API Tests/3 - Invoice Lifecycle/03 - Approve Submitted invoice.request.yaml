@@ -1,0 +1,23 @@
+$kind: http-request
+name: '03 - Approve Submitted invoice'
+order: 3000
+method: POST
+url: '{{baseUrl}}/invoices/{{draftInvoiceId}}/approve'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantA_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Invoice status is approved", function () {
+          const json = pm.response.json();
+          pm.expect(json.status).to.eql("approved");
+          pm.expect(json.approved_by).to.be.a("number");
+          pm.collectionVariables.set("approveInvoiceId", json.id);
+      });

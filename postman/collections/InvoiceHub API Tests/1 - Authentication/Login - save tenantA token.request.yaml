@@ -1,0 +1,27 @@
+$kind: http-request
+name: 'Login - save tenantA token'
+order: 3000
+method: POST
+url: '{{baseUrl}}/auth/login'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "email": "admin@acme.test",
+        "password": "Passw0rd!"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Saves tenantA_token", function () {
+          const json = pm.response.json();
+          pm.expect(json.access_token).to.be.a("string");
+          pm.collectionVariables.set("tenantA_token", json.access_token);
+      });

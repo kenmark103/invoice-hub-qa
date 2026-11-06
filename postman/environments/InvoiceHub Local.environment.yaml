@@ -1,0 +1,46 @@
+name: InvoiceHub Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8010'
+    enabled: true
+    type: default
+  - key: token
+    value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzIiwidGVuYW50X2lkIjoxLCJyb2xlIjoic3RhZmYiLCJleHAiOjE3OTM5ODY1Njl9.ObOygOoLMyMvGtWbnY9JaOBVnGwtHtLIjbma-lcMbkY'
+    enabled: true
+    type: default
+  - key: tenantA_token
+    value: ''
+    enabled: true
+    type: default
+  - key: tenantB_token
+    value: ''
+    enabled: true
+    type: default
+  - key: invoiceId
+    value: ''
+    enabled: true
+    type: default
+  - key: draftInvoiceId
+    value: ''
+    enabled: true
+    type: default
+  - key: approveInvoiceId
+    value: ''
+    enabled: true
+    type: default
+  - key: rejectInvoiceId
+    value: ''
+    enabled: true
+    type: default
+  - key: voidInvoiceId
+    value: ''
+    enabled: true
+    type: default
+  - key: payInvoiceId
+    value: ''
+    enabled: true
+    type: default
+  - key: customerId
+    value: '1'
+    enabled: true
+    type: default

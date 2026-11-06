@@ -2,7 +2,7 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LoginIn(BaseModel):
@@ -24,13 +24,13 @@ class LineIn(BaseModel):
 class InvoiceCreate(BaseModel):
     customer_id: int
     due_date: date
-    lines: list
+    lines: list[LineIn]
 
 
 class InvoicePatch(BaseModel):
     customer_id: int | None = None
     due_date: date | None = None
-    lines: list | None = None
+    lines: list[LineIn] | None = None
     status: str | None = None
 
 
@@ -60,4 +60,4 @@ class InvoiceOut(BaseModel):
     due_date: date
     created_by: int
     approved_by: int | None
-    lines: list = []
+    lines: list[LineOut] = Field(default_factory=list)

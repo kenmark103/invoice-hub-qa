@@ -1,0 +1,41 @@
+$kind: http-request
+name: '10 - Admin voids Approved invoice'
+order: 10000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantA_token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Admin void test item",
+                "qty": 1,
+                "unit_price": 300.00
+            }
+        ]
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      // This request creates a draft, submits, approves, then voids it.
+      // For simplicity in a runner, use separate requests or a pre-request script chain.
+      // This request creates the draft; subsequent requests in this folder handle the transitions.
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.collectionVariables.set("adminVoidInvoiceId", pm.response.json().id);

@@ -1,0 +1,39 @@
+$kind: http-request
+name: 'Create Pro invoice - 15% cap tier (subtotal 10000)'
+order: 6000
+method: POST
+url: '{{baseUrl}}/invoices'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{tenantB_token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+        "customer_id": {{customerId}},
+        "due_date": "2027-06-01",
+        "lines": [
+            {
+                "description": "Pro item at 10000 threshold",
+                "qty": 4,
+                "unit_price": 2500.00
+            }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("Pro plan: discount capped at 15% at subtotal 10000", function () {
+          const json = pm.response.json();
+          pm.expect(parseFloat(json.subtotal)).to.eql(10000.00);
+          pm.expect(parseFloat(json.discount_rate)).to.eql(15);
+      });
