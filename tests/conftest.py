@@ -76,6 +76,21 @@ def tenant_b(db):
 
 
 @pytest.fixture()
+def seeded_ids(db):
+    """Named IDs for the tenants and customers created by the default seed."""
+    tenant_a = db.query(Tenant).filter(Tenant.name == "Acme Ltd").one()
+    tenant_b = db.query(Tenant).filter(Tenant.name == "Beta Corp").one()
+    customer_a = db.query(Customer).filter(Customer.email == "c1@acme.test").one()
+    customer_b = db.query(Customer).filter(Customer.email == "c1@beta.test").one()
+    return {
+        "tenant_a": tenant_a.id,
+        "tenant_b": tenant_b.id,
+        "customer_a": customer_a.id,
+        "customer_b": customer_b.id,
+    }
+
+
+@pytest.fixture()
 def reset_db(db):
     def _reset():
         for tbl in ("invoice_lines", "invoices", "customers", "users", "tenants"):
@@ -125,10 +140,11 @@ def b_client(client):
 def make_draft(client, headers, customer_id=1, lines=None, due=None):
     from datetime import date, timedelta
 
+    default_lines = [{"description": "Testing services", "qty": 2, "unit_price": "600.00"}]
     body = {
         "customer_id": customer_id,
         "due_date": str(due or (date.today() + timedelta(days=7))),
-        "lines": lines or [{"description": "Testing services", "qty": 2, "unit_price": "600.00"}],
+        "lines": lines if lines is not None else default_lines,
     }
     r = client.post("/invoices", json=body, headers=headers)
     assert r.status_code == 201, r.text
